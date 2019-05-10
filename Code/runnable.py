@@ -7,10 +7,11 @@ import tkinter
 from tkinter import Canvas
 import PIL.Image
 import PIL.ImageTk
+import numpy as np
 
 #######################################################################################
 # CONFIGURATION PARAMETERS
-input_video = './data/train.mp4'
+input_video = '../../data/train.mp4'
 #######################################################################################
 # Methods and start
 
@@ -38,7 +39,7 @@ class App:
         self.btn_snapshot.pack(anchor=tkinter.CENTER, expand=True)
 
         # After it is called once, the update method will be automatically called every delay milliseconds
-        self.delay = 15
+        self.delay = 50
         self.update()
 
         self.window.mainloop()
@@ -46,14 +47,32 @@ class App:
     def snapshot(self):
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
-
+        
         if ret:
             cv.imwrite("./snapshots/frame-" + time.strftime("%d-%m-%Y-%H-%M-%S") +
                        ".jpg", cv.cvtColor(frame, cv.COLOR_RGB2BGR))
 
+    #source: https://docs.opencv.org/trunk/d1/d89/tutorial_py_orb.html
+    def process_frame(self, frame):
+        # Initiate ORB detector
+        orb = cv.ORB_create()
+        # find the keypoints with ORB
+        kp = orb.detect(frame, None)
+        # compute the descriptors with ORB
+        kp, des = orb.compute(frame, kp)
+        # draw only keypoints location,not size and orientation
+        output_frame = cv.drawKeypoints(frame, kp, None, color=(0, 255, 0), flags=0)
+
+        #for point in kp:
+         #   x,y = map(lambda x: int(round(x)), point.pt)
+
+        return output_frame
+
     def update(self):
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
+
+        frame = self.process_frame(frame)
 
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(
@@ -63,7 +82,7 @@ class App:
         self.window.after(self.delay, self.update)
 
 # source: https://solarianprogrammer.com/2018/04/21/python-opencv-show-video-tkinter-window/
-
+#code is modified
 
 class MyVideoCapture:
     def __init__(self, video_source=0):
@@ -79,19 +98,19 @@ class MyVideoCapture:
     def get_frame(self):
         if self.vid.isOpened():
             ret, frame = self.vid.read()
-            if ret:
+            if ret:                
                 # Return a boolean success flag and the current frame converted to BGR
-                return (ret, cv.cvtColor(frame, cv.COLOR_BGR2RGB))
+                img2 = (ret, cv.cvtColor(frame, cv.COLOR_BGR2RGB))
+                
+                return img2
             else:
                 return (ret, None)
-        else:
-            return (ret, None)
 
     # Release the video source when the object is destroyed
     def __del__(self):
         if self.vid.isOpened():
             self.vid.release()
 
-
 # Create a window and pass it to the Application object
 App(tkinter.Tk(), "Tkinter and OpenCV")
+
