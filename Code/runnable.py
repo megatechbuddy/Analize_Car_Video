@@ -95,4 +95,7 @@ class MyVideoCapture:
 
 # Create a window and pass it to the Application object
 App(tkinter.Tk(), "Tkinter and OpenCV")
+<<<<<<< HEAD
+>>>>>>> parent of 7f2c2f4... Shows orbs
+=======
 >>>>>>> parent of 7f2c2f4... Shows orbs
